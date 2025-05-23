@@ -1,7 +1,8 @@
 local graphics = {}
 
 function graphics.clear()
-    os.execute("clear")
+    io.write("\27c")
+    io.write("\27[?25l")
 end
 
 function graphics.draw(text, x, y)

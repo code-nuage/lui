@@ -1,3 +1,30 @@
+local function parse_ansi()
+    local c = io.read(1)
+    if c ~= "\27" then
+        return c
+    end
+
+    local seq = c
+
+    local next_char = io.read(1)
+    if not next_char then return seq end
+    seq = seq .. next_char
+
+    while true do
+        local ch = io.read(1)
+        if not ch then break end
+        seq = seq .. ch
+        local byte = string.byte(ch)
+        if byte >= 64 and byte <= 126 then
+            -- Fin de séquence ANSI détectée
+            break
+        end
+    end
+
+    return seq
+end
+
+
 return function()
     local function restore()
         lui.graphics.clear()
@@ -8,6 +35,9 @@ return function()
 
     local function handler(err)
         restore()
+        print(debug.traceback(err))
+        io.write("Enter to exit > ")
+        local input = io.read()
         return debug.traceback(err)
     end
 
@@ -21,7 +51,7 @@ return function()
                 lui.draw()
             end
             if type(lui.update) == "function" then
-                lui.input = io.read(1)
+                lui.input = parse_ansi()
                 lui.update()
             end
         end
