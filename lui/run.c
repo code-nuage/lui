@@ -44,27 +44,44 @@ static void set_lui_state(lua_State *L, int value) {
     lua_pop(L, 1);                                                             // Pop 'lui'
 }
 
+static void restore() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+    printf(ESC "c");
+    printf(ESC "[0m");                                                         // Reset colors
+    printf(ESC "[?25h");                                                       // Show cursor
+    fflush(stdout);
+}
 
 static int call_optional_function(lua_State *L, const char *name) {
     lua_getglobal(L, "lui");
-    if (!lua_istable(L, -1)) { lua_pop(L, 1); return 0; }
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return 0;
+    }
 
-    lua_getfield(L, -1, name);
+    lua_getfield(L, -1, name); // lui[name]
+    lua_remove(L, -2);         // retire `lui`, garde juste la fonction
+
     if (!lua_isfunction(L, -1)) {
-        lua_pop(L, 2);
+        lua_pop(L, 1);
         return 0;
     }
 
     if (lua_pcall(L, 0, 0, 0) != 0) {
+        restore();
         const char *err = lua_tostring(L, -1);
-        fprintf(stderr, "Error in %s: %s\n", name, err);
-        lua_pop(L, 2);
-        return 0;
+
+        char msg[512];
+        snprintf(msg, sizeof(msg), "%s", err);
+
+        lua_pop(L, 1);
+        lua_pushstring(L, msg);
+        return lua_error(L);
     }
 
-    lua_pop(L, 1);
     return 1;
 }
+
 
 static void set_raw_mode() {
     tcgetattr(STDIN_FILENO, &orig_termios);
@@ -77,13 +94,6 @@ static void set_raw_mode() {
 
     tcsetattr(STDIN_FILENO, TCSANOW, &raw);
     printf(ESC "[?25l");                                                       // Hide cursor
-    fflush(stdout);
-}
-
-static void restore() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
-    printf(ESC "[0m");                                                         // Reset colors
-    printf(ESC "[?25h");                                                       // Show cursor
     fflush(stdout);
 }
 
@@ -107,13 +117,16 @@ static char *parse_ansi() {
     char c;
     while (read(STDIN_FILENO, &c, 1) == 1) {
         buf[i++] = c;
+
         if (i >= 15) break;
 
         if (i == 1 && c != '\x1b') break;
 
-        if (i > 1) {
+        if (i >= 2) {
             unsigned char byte = (unsigned char)c;
-            if (byte >= 64 && byte <= 126) break;
+            if (byte >= '@' && byte <= '~' && byte != '[') {
+                break;
+            }
         }
     }
 
@@ -124,12 +137,14 @@ static char *parse_ansi() {
 int lui_run(lua_State *L) {
     set_raw_mode();
 
-    call_optional_function(L, "load");
-
     set_lui_state(L, 1);
+
+    call_optional_function(L, "load");
 
     while (get_lui_state(L)) {
         call_optional_function(L, "draw");
+        printf(ESC "[?25l");                                                       // Hide cursor
+        fflush(stdout);
 
         char *input = parse_ansi();
         if (input) {

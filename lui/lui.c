@@ -43,5 +43,18 @@ int luaopen_lui(lua_State *L) {
 
     lua_setfield(L, -2, "graphics");
 
+    // --+ KEYBOARD +--
+    lua_newtable(L);
+
+    // IS_DOWN
+    lua_pushcfunction(L, lui_keyboard_is_down);
+    lua_setfield(L, -2, "is_down");
+
+    lua_setfield(L, -2, "keyboard");
+
+    // --+ SET _G.lui +--
+    lua_pushvalue(L, -1);
+    lua_setglobal(L, "lui");
+
     return 1;
 }
