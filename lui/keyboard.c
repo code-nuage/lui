@@ -33,7 +33,7 @@ int lui_keyboard_is_down(lua_State *L) {
 
     if (input) {
         if (strcmp(input, key) == 0) {
-            free(input);  // Ne pas oublier !
+            free(input);
             lua_pushboolean(L, 1);
             return 1;
         }

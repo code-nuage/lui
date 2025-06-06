@@ -47,8 +47,8 @@ int lui_graphics_get_dimensions(lua_State *L) {
         return luaL_error(L, "Failed to get terminal size");
     }
 
-    lua_pushinteger(L, w.ws_col);  // largeur -> width
-    lua_pushinteger(L, w.ws_row);  // hauteur -> height
+    lua_pushinteger(L, w.ws_col);
+    lua_pushinteger(L, w.ws_row);
     return 2;
 }
 

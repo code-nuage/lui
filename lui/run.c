@@ -59,8 +59,8 @@ static int call_optional_function(lua_State *L, const char *name) {
         return 0;
     }
 
-    lua_getfield(L, -1, name); // lui[name]
-    lua_remove(L, -2);         // retire `lui`, garde juste la fonction
+    lua_getfield(L, -1, name);
+    lua_remove(L, -2);
 
     if (!lua_isfunction(L, -1)) {
         lua_pop(L, 1);
