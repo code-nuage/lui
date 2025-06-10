@@ -9,6 +9,8 @@
 
 #include <lua.h>
 #include <lauxlib.h>
+#include <wchar.h>
+#include <locale.h>
 
 #define ESC "\x1b"
 
@@ -18,30 +20,39 @@ int lui_graphics_clear(lua_State *L) {
 }
 
 int lui_graphics_draw(lua_State *L) {
+    // Get UTF-8 text from Lua and convert to wide string
     const char *text = luaL_checkstring(L, 1);
+
+    size_t len = mbstowcs(NULL, text, 0);
+    if (len == (size_t)-1) {
+        return luaL_error(L, "Invalid UTF-8 input");
+    }
+
+    wchar_t *wtext = malloc((len + 1) * sizeof(wchar_t));
+    if (!wtext) {
+        return luaL_error(L, "Memory allocation failed");
+    }
+
+    mbstowcs(wtext, text, len + 1);
+
     int x = luaL_checkinteger(L, 2);
     int y = luaL_checkinteger(L, 3);
 
-    char *text_copy = strdup(text);
-    if (!text_copy) {
-        luaL_error(L, "Memory allocation failed");
-    }
-
-    char *line = strtok(text_copy, "\n");
+    wchar_t *saveptr;
+    wchar_t *line = wcstok(wtext, L"\n", &saveptr);
     int line_num = 0;
 
-    while (line != NULL && y + line_num < MAX_HEIGHT) {
+    while (line && y + line_num < MAX_HEIGHT) {
         int i = 0;
-        while (line[i] != '\0' && x + i < MAX_WIDTH) {
+        while (line[i] != L'\0' && x + i < MAX_WIDTH) {
             screen_buffer[y + line_num][x + i] = line[i];
             i++;
         }
-
-        line = strtok(NULL, "\n");
+        line = wcstok(NULL, L"\n", &saveptr);
         line_num++;
     }
 
-    free(text_copy);
+    free(wtext);
     return 0;
 }
 

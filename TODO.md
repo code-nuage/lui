@@ -5,5 +5,5 @@
 
 - [ ] Add double buffering to end the "flashing" interface
   - [ ] Fix the ANSI escape sequence
-  - [ ] Fix "flashing" buffer
+  - [x] Fix "flashing" buffer
   - [ ] Fix non recognized characters (has it something to do with ANSI ?)

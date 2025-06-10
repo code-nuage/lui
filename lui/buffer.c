@@ -1,3 +1,4 @@
 #include "buffer.h"
+#include <wchar.h>
 
-char screen_buffer[MAX_HEIGHT][MAX_WIDTH];
+wchar_t screen_buffer[MAX_HEIGHT][MAX_WIDTH];                                  // To support unicode characters

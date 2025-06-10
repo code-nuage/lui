@@ -1,5 +1,6 @@
 #include <lua.h>
 #include <lauxlib.h>
+#include <locale.h>
 
 #include "run.h"
 #include "exit.h"
@@ -7,7 +8,10 @@
 #include "colors.h"
 #include "keyboard.h"
 
+
 int luaopen_lui(lua_State *L) {
+    setlocale(LC_ALL, "");                                                     // Support UTF-8 for wprintf & wchar_t
+
     lua_newtable(L);
 
     // --+ RUN +--
