@@ -1,4 +1,5 @@
 #include "run.h"
+#include "buffer.h"
 
 #include <stdio.h>
 #include <termios.h>
@@ -133,6 +134,37 @@ static char *parse_ansi() {
     return strdup(buf);
 }
 
+char *current_screen[MAX_HEIGHT][MAX_WIDTH];
+
+void init_current_screen() {
+    for (int y = 0; y < MAX_HEIGHT; y++) {
+        for (int x = 0; x < MAX_WIDTH; x++) {
+            current_screen[y][x] = malloc(sizeof(char));
+            *current_screen[y][x] = ' ';
+        }
+    }
+}
+
+void free_current_screen() {
+    for (int y = 0; y < MAX_HEIGHT; y++) {
+        for (int x = 0; x < MAX_WIDTH; x++) {
+            free(current_screen[y][x]);
+        }
+    }
+}
+
+void flush_buffer() {
+    for (int y = 0; y < MAX_HEIGHT; y++) {
+        for (int x = 0; x < MAX_WIDTH; x++) {
+            if (screen_buffer[y][x] != *current_screen[y][x]) {
+                *current_screen[y][x] = screen_buffer[y][x];
+                printf("\033[%d;%dH%c", y, x, *current_screen[y][x]);
+            }
+        }
+    }
+    fflush(stdout);
+}
+
 // --+ LUA INTERFACE +--
 int lui_run(lua_State *L) {
     set_raw_mode();
@@ -142,9 +174,11 @@ int lui_run(lua_State *L) {
     call_optional_function(L, "load");
 
     while (get_lui_state(L)) {
+        init_current_screen();
         call_optional_function(L, "draw");
         printf(ESC "[?25l");                                                       // Hide cursor
-        fflush(stdout);
+        flush_buffer();
+        free_current_screen();
 
         char *input = parse_ansi();
         if (input) {

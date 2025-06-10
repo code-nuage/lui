@@ -1,8 +1,8 @@
 package = "lui"
-version = "0.1-1"
+version = "0.1-3"
 source = {
   url = "git+https://github.com/code-nuage/lui.git",
-  tag = "v0.1.1"
+  tag = "v0.1.3"
 }
 description = {
   summary = "Terminal User Interface for Lua",
@@ -24,7 +24,8 @@ build = {
         "lui/exit.c",
         "lui/graphics.c",
         "lui/colors.c",
-        "lui/keyboard.c"
+        "lui/keyboard.c",
+        "lui/buffer.c"
       },
       incdirs = { "." }
     }

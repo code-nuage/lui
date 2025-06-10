@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "buffer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,9 +30,12 @@ int lui_graphics_draw(lua_State *L) {
     char *line = strtok(text_copy, "\n");
     int line_num = 0;
 
-    while (line != NULL) {
-        printf("\033[%d;%dH", y + line_num, x);
-        printf("%s", line);
+    while (line != NULL && y + line_num < MAX_HEIGHT) {
+        int i = 0;
+        while (line[i] != '\0' && x + i < MAX_WIDTH) {
+            screen_buffer[y + line_num][x + i] = line[i];
+            i++;
+        }
 
         line = strtok(NULL, "\n");
         line_num++;
