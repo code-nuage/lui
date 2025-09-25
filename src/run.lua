@@ -1,5 +1,6 @@
 local term = require("lui.term")
 local buffer = require("lui.buffer")
+local keyboard = require("lui.keyboard")
 local luierr = require("lui.luierr")
 
 local run = function(lui)
@@ -15,9 +16,11 @@ local run = function(lui)
             lui.load()
         end
         while lui.STATE == true do
+            keyboard.poll()
             if type(lui.update) == "function" then
                 lui.update()
             end
+            keyboard.clear()
 
             if type(lui.draw) == "function" then
                 lui.draw()
