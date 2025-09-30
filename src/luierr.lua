@@ -25,7 +25,6 @@ local luierr = function(err)
     while not _ do
         _  = io.read(1)
         io.write("\27[0m")
-        term.clear()
         break
     end
 end

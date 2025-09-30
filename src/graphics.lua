@@ -1,10 +1,20 @@
+local utf8 = require("utf8")
+
 local term = require("lui.term")
 local buffer = require("lui.buffer")
 
 local graphics = {}
 
 graphics.draw = function(text, x, y)
-    buffer.register(buffer.back, text, x, y)
+    local lines = {}
+    local cy = 0
+    for line in text:gmatch("([^\r\n]+)") do
+        cy = cy + 1
+        for cx = 1, utf8.len(line), 1 do
+            local char = utf8.sub(line, cx, cx)
+            buffer.register(buffer.back, char, cx + x - 1, cy + y - 1)
+        end
+    end
 end
 
 graphics.get_window_size = function()

@@ -21,7 +21,6 @@ local run = function(lui)
                 lui.update()
             end
             keyboard.clear()
-
             if type(lui.draw) == "function" then
                 lui.draw()
             end
@@ -30,6 +29,8 @@ local run = function(lui)
             buffer.output(buffer.back, changed_cells)
 
             buffer.copy(buffer.back, buffer.front, changed_cells)
+
+            buffer.clear(buffer.back)
         end
 
         term.show_cursor()
